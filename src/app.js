@@ -1,8 +1,13 @@
-const http = require('http')
-const routes = require('./routes')
+const express = require('express')
+const bodyParser = require('body-parser')
+const adminRoutes = require('./routes/admin')
+const shopRoutes = require('./routes/shop')
 
-console.log(routes.someKey)
+const app = express()
 
-const server = http.createServer(routes.handler)
+// add middleware
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(adminRoutes)
+app.use(shopRoutes)
 
-server.listen(3000)
+app.listen(3000)
