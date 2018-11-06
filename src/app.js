@@ -1,17 +1,25 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const path = require('path')
-const adminRoutes = require('./routes/admin')
+const adminData = require('./routes/admin')
 const shopRoutes = require('./routes/shop')
 const rootDir = require('./utils/path')
 
-// added 404 page
-// added filters for routes
-// added HTML page loading
-// styled HTML pages
-// added serving of static files
-
+// changed export logic in admin.js
+// changed import logic appropriately
+// replaced my html with the html from Maxs' zip file
+// added Pug templating engine and relative .pug files
 const app = express()
+
+// https://expressjs.com/en/api.html#app.set
+
+// ### PUG
+// ** pug auto-registers itself with express upon install via NPM... hence, you don't have to require it. You only have to refer to it by name
+app.set('view engine', 'pug')
+// default value for the property 'views' is process.cwd() + '/views' ... but, we're setting it here to be verbose and exemplify
+// **** NOTE: Had to use path.join(__dirname, 'views') instead of just 'views' (Windows issue??)
+app.set('views', path.join(__dirname, 'views'))
+// ### END PUG
 
 // add middleware
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -21,14 +29,14 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // ** note, you can have multiple static folders. But, the referenced file will be resolved relative to the first folder where Express finds said file
 app.use(express.static(path.join(__dirname, 'public')))
 // .use can be prefaced with a filter that will only match the defined routes if the filter is matched as well (instead of having to repeat it in all the defined routes)
-app.use(adminRoutes.filterKey, adminRoutes.paths)
+app.use(adminData.filterKey, adminData.routes)
 app.use(shopRoutes)
 
 // .use handles all http methods (versus sister methods like get and post)
 // catch all route for routes that could not be matched (404 page)
 app.use((req, res, next) => {
   let statusCode = 404
-  res.status(statusCode).sendFile(path.join(rootDir, 'views', '404.html'))
+  res.status(statusCode).render('./pug/404', { docTitle: '404 - Page Not Found' })
 })
 
 app.listen(3000)
