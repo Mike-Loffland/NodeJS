@@ -9,7 +9,15 @@ router.get('/', (req, res, next) => {
   // console.log('shop.js', adminData.products)
   // res.sendFile(path.join(rootDir, 'views', 'shop.html'))
   const products = adminData.products
-  res.render('./pug/shop', { products, docTitle: 'Shop', path: '/' })
+  // Handlebars philosophy is to push most if not ALL the configuration into the JavaScript file
+  res.render('./handlebars/shop', {
+    products,
+    docTitle: 'Shop',
+    path: '/',
+    hasProducts: products.length > 0,
+    activeShop: true,
+    productCSS: true,
+  })
 })
 
 module.exports = router

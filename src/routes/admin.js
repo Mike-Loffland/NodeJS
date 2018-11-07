@@ -1,14 +1,18 @@
 const express = require('express')
 const router = express.Router()
-const path = require('path')
-const rootDir = require('../utils/path')
-
 const filterKey = '/admin'
 
 const products = []
 
 router.get('/add-product', (req, res, next) => {
-  res.render('./pug/add-product', { docTitle: 'Add Product', path: '/admin/add-product' })
+  res.render('./handlebars/add-product', {
+    docTitle: 'Add Product',
+    path: '/admin/add-product',
+    activeAddProduct: true,
+    formsCSS: true,
+    productCSS: true,
+    filterKey,
+  })
 })
 
 // sister functions to .use : .get, .post, .put, .patch, and .delete
