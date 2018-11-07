@@ -5,12 +5,9 @@ const filterKey = '/admin'
 const products = []
 
 router.get('/add-product', (req, res, next) => {
-  res.render('./handlebars/add-product', {
+  res.render('./ejs/add-product', {
     docTitle: 'Add Product',
-    path: '/admin/add-product',
-    activeAddProduct: true,
-    formsCSS: true,
-    productCSS: true,
+    path: `${filterKey}/add-product`,
     filterKey,
   })
 })
