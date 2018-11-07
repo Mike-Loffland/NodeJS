@@ -1,24 +1,12 @@
 const express = require('express')
-const router = express.Router()
+const productsController = require('../controllers/products')
 const filterKey = '/admin'
+const router = express.Router()
 
-const products = []
-
-router.get('/add-product', (req, res, next) => {
-  res.render('./ejs/add-product', {
-    docTitle: 'Add Product',
-    path: `${filterKey}/add-product`,
-    filterKey,
-  })
-})
+router.get('/add-product', productsController.getAddProduct)
 
 // sister functions to .use : .get, .post, .put, .patch, and .delete
-router.post('/add-product', (req, res, next) => {
-  let { title } = req.body
-  products.push({ title })
-  res.redirect('/')
-})
+router.post('/add-product', productsController.postAddProduct)
 
 exports.routes = router
 exports.filterKey = filterKey
-exports.products = products
