@@ -1,0 +1,47 @@
+<%- include('../includes/head.ejs') %>
+<style>
+  th {
+    font-size: 0.75rem;
+  }
+  th, td {
+      padding: 5px;
+      text-align: left;
+  }
+</style>
+</head>
+
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+
+    <main>
+      <% if (cart.cartProducts.length > 0) { %>
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Line Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for (let cartProduct of cart.cartProducts) { %>
+              <tr>
+                <td><a href="/delete-cart-item/<%= cartProduct.productData.id %>" style="color:red;font-size:1.5rem;text-decoration:none;">X</a></td>
+                <td><img src="<%= cartProduct.productData.imageUrl %>" alt="<%= cartProduct.productData.title %>" width="30" height="30"></td>
+                <td><%= cartProduct.productData.title %></td>
+                <td><%= cartProduct.qty %></td>
+                <td>$<%= cartProduct.linePrice %></td>
+              </tr>
+            <% } %>
+            <tr>
+              <td colspan="3" style="text-align:right;">Total:</td><td>$<%= cart.totalPrice %></td>
+            </tr>
+          </tbody>
+        </table>
+      <% } else { %>
+        <h1>Nothing in your cart</h1>
+      <% } %>
+    </main>
+<%- include('../includes/end.ejs') %>

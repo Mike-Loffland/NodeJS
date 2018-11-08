@@ -1,12 +1,19 @@
 const express = require('express')
-const productsController = require('../controllers/products')
+const adminController = require('../controllers/admin')
 const filterKey = '/admin'
 const router = express.Router()
 
-router.get('/add-product', productsController.getAddProduct)
+router.get('/add-product', adminController.getAddProduct)
 
-// sister functions to .use : .get, .post, .put, .patch, and .delete
-router.post('/add-product', productsController.postAddProduct)
+router.get('/products', adminController.getProducts)
+
+router.post('/add-product', adminController.postAddProduct)
+
+router.get('/edit-product/:id', adminController.getEditProduct)
+
+router.post('/edit-product', adminController.postEditProduct)
+
+router.get('/delete-product/:id', adminController.getDeleteProduct)
 
 exports.routes = router
 exports.filterKey = filterKey
