@@ -62,3 +62,6 @@ typings/
 
 # app output files
 message.txt
+
+# misc
+src/utils/mysqlconnection.js

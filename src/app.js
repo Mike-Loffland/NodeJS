@@ -5,8 +5,8 @@ const adminData = require('./routes/admin')
 const shopRoutes = require('./routes/shop')
 const rootDir = require('./utils/path')
 const fileNotFoundController = require('./controllers/file-not-found')
-const app = express()
 
+const app = express()
 // tell express the name of the view engine
 // https://expressjs.com/en/4x/api.html#app.settings.table
 // EjS auto-registers itself with Express when installed via NPM or Yarn
