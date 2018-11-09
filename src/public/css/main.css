@@ -62,8 +62,25 @@ form {
   align-items: stretch;
 }
 
-.card {
+.cart {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card,
+.cart {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+}
+
+.cart img {
+  max-height: 35px;
+  margin: 5px;
+}
+
+.cart a {
+  margin-right: 5px;
 }
 
 .card__header,

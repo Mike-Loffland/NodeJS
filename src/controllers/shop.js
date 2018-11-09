@@ -1,11 +1,9 @@
 // CONTROLLER - connects model and view, should only make sure that the two can communicate (in both directions)
 const Product = require('../models/product')
-const Cart = require('../models/cart')
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
-    // rows = result array, fieldData = metadata array
-    .then(([products, fieldData]) => {
+  Product.findAll()
+    .then(products => {
       res.render('./ejs/shop/index', {
         products,
         docTitle: 'Shop',
@@ -13,13 +11,13 @@ exports.getIndex = (req, res, next) => {
       })
     })
     .catch(err => {
-      console.log(err)
+      console.loog(err)
     })
 }
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
-    .then(([products]) => {
+  Product.findAll()
+    .then(products => {
       res.render('./ejs/shop/product-list', {
         products,
         docTitle: 'All Products',
@@ -27,15 +25,15 @@ exports.getProducts = (req, res, next) => {
       })
     })
     .catch(err => {
-      console.log(err)
+      console.loog(err)
     })
 }
 
 exports.getProductById = (req, res, next) => {
   let { id } = req.params
-  Product.getProduct(id)
-    .then(([dbProduct]) => {
-      let [product] = dbProduct
+
+  Product.findByPk(id)
+    .then(product => {
       res.render('./ejs/shop/product-detail', {
         product,
         docTitle: `Product Details: ${product.title}`,
@@ -45,58 +43,150 @@ exports.getProductById = (req, res, next) => {
     .catch(err => {
       console.log(err)
     })
+  // // alt method... findAll via where clause.. returns an array
+  // Product.findAll({ where: { id } })
+  //   .then(([product]) => {
+  //     res.render('./ejs/shop/product-detail', {
+  //       product,
+  //       docTitle: `Product Details: ${product.title}`,
+  //       path: '/products',
+  //     })
+  //   })
+  //   .catch(err => {
+  //     console.log(err)
+  //   })
 }
 
 exports.getCart = (req, res, next) => {
-  Cart.getCart(cart => {
-    Product.fetchAll(products => {
-      const cartProducts = []
-      cart.products.forEach(cp => {
-        let product = products.find(p => p.id === cp.id)
-        if (product) {
-          cartProducts.push({ productData: product, qty: cp.qty, linePrice: product.price * cp.qty })
-        }
-      })
+  req.user
+    .getCart()
+    .then(cart => {
+      return cart.getProducts()
+    })
+    .then(products => {
       res.render('./ejs/shop/cart', {
         docTitle: 'Your Cart',
         path: '/cart',
-        cart: { totalPrice: cart.totalPrice, cartProducts },
+        cartProducts: products,
       })
     })
-  })
+    .catch(err => {
+      console.log(err)
+    })
 }
 
 exports.deleteCartItem = (req, res, next) => {
   let { id } = req.params
-  Product.getProduct(id, product => {
-    if (!product) {
-      // throw error
-      console.log(`Product was not found for id: ${id}`)
-    } else {
-      Cart.removeProduct(product)
+  req.user
+    .getCart()
+    .then(cart => {
+      return cart.getProducts({ where: { id } })
+    })
+    .then(([product]) => {
+      return product.cartItem.destroy()
+    })
+    .then(() => {
       res.redirect('/cart')
-    }
-  })
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  // Product.getProduct(id, product => {
+  //   if (!product) {
+  //     // throw error
+  //     console.log(`Product was not found for id: ${id}`)
+  //   } else {
+  //     Cart.removeProduct(product)
+  //     res.redirect('/cart')
+  //   }
+  // })
 }
 
 exports.postCart = (req, res, next) => {
   let { id } = req.body
-  Product.getProduct(id, prod => {
-    Cart.addProduct(prod)
-  })
-  res.redirect('/cart')
+  let fetchedCart
+  let newQuantity = 1
+
+  req.user
+    .getCart()
+    .then(cart => {
+      // see if the incoming product is already in the user's cart
+      fetchedCart = cart
+      return fetchedCart.getProducts({ where: { id } })
+    })
+    .then(([product]) => {
+      if (product) {
+        const oldQuantity = product.cartItem.quantity
+        newQuantity = oldQuantity + 1
+        return product
+      }
+      return Product.findByPk(id)
+    })
+    .then(product => {
+      // addProduct will update if the record is already there... or add a new record if it doesn't
+      // ... so, addProduct does more than just "add"
+      return fetchedCart.addProduct(product, { through: { quantity: newQuantity } })
+    })
+    .then(() => {
+      res.redirect('/cart')
+    })
+    .catch(err => {
+      console.log(err)
+    })
+}
+
+exports.postOrder = (req, res, next) => {
+  let fetchedCart
+  req.user
+    .getCart()
+    .then(cart => {
+      fetchedCart = cart
+      return fetchedCart.getProducts()
+    })
+    .then(cartProducts => {
+      return req.user
+        .createOrder()
+        .then(order => {
+          return order.addProducts(
+            cartProducts.map(cp => {
+              cp.orderItem = { quantity: cp.cartItem.quantity }
+              return cp
+            })
+          )
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    })
+    .then(orderProducts => {
+      return fetchedCart.setProducts(null)
+    })
+    .then(result => {
+      res.redirect('/orders')
+    })
+    .catch(err => {
+      console.log(err)
+    })
 }
 
 exports.getOrders = (req, res, next) => {
-  res.render('./ejs/shop/orders', {
-    docTitle: 'Your Orders',
-    path: '/orders',
-  })
+  req.user
+    .getOrders({ include: ['products'] })
+    .then(orders => {
+      res.render('./ejs/shop/orders', {
+        docTitle: 'Your Orders',
+        path: '/orders',
+        orders,
+      })
+    })
+    .catch(err => {
+      console.log(err)
+    })
 }
 
-exports.getCheckout = (req, res, next) => {
-  res.render('./ejs/shop/checkout', {
-    docTitle: 'Checkout',
-    path: '/ccheckout',
-  })
-}
+// exports.getCheckout = (req, res, next) => {
+//   res.render('./ejs/shop/checkout', {
+//     docTitle: 'Checkout',
+//     path: '/ccheckout',
+//   })
+// }
