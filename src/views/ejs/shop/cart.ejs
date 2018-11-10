@@ -24,7 +24,7 @@
                  (<%= product.cartItem.quantity %>)
               </div>
 
-             <a href="/delete-cart-item/<%= product.id %>" class="btn">Remove</a>
+             <a href="/delete-cart-item/<%= product._id %>" class="btn">Remove</a>
             </div>
           <% } %>
         <form action="/create-order" method="POST" style="margin:auto;width:160px;padding-top:20px;display:block;">

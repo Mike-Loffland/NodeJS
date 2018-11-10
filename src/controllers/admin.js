@@ -14,9 +14,8 @@ exports.getEditProduct = (req, res, next) => {
   if (editMode) {
     const { id } = req.params
     // getting the product to edit based on the user... not sure why he is doing this (wouldn't you want admins to be able to edit ALL products?? not just the ones they created?)
-    req.user
-      .getProducts({ where: { id } })
-      .then(([product]) => {
+    Product.getById(id)
+      .then(product => {
         if (!product) {
           // throw error
           console.log(`Product was not found for id: ${id}`)
@@ -39,13 +38,7 @@ exports.getEditProduct = (req, res, next) => {
 
 exports.getDeleteProduct = (req, res, next) => {
   const { id } = req.params
-  // Product.findById(id)
-  req.user
-    .getProducts({ where: { id } })
-    // returns an array... destructure
-    .then(([product]) => {
-      return product.destroy()
-    })
+  Product.deleteById(id)
     .then(() => {
       res.redirect('/admin/products')
     })
@@ -55,10 +48,9 @@ exports.getDeleteProduct = (req, res, next) => {
 }
 
 exports.postAddProduct = (req, res, next) => {
-  let { title, imageUrl, price, description } = req.body
-  // sequelize places helper methods (hasMany association in this case.. will associate the user with the new product.. hence the availability of the .createProduct method )
-  req.user
-    .createProduct({ title, imageUrl, price, description })
+  const product = new Product(req.body)
+
+    product.save()
     .then(result => {
       res.redirect('/admin/products')
     })
@@ -68,17 +60,8 @@ exports.postAddProduct = (req, res, next) => {
 }
 
 exports.postEditProduct = (req, res, next) => {
-  let { id, title, imageUrl, price, description } = req.body
-  req.user
-    .getProducts({ where: { id } })
-    .then(([product]) => {
-      product.title = title
-      product.imageUrl = imageUrl
-      product.price = price
-      product.description = description
-      // returns a promise
-      return product.save()
-    })
+  const product = new Product(req.body)
+  product.save()
     .then(() => {
       res.redirect('/admin/products')
     })
@@ -88,8 +71,7 @@ exports.postEditProduct = (req, res, next) => {
 }
 
 exports.getProducts = (req, res, next) => {
-  req.user
-    .getProducts()
+  Product.fetchAll()
     .then(products => {
       res.render('./ejs/admin/product-list-admin', {
         products,

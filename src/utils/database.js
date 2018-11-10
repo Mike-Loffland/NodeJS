@@ -1,11 +1,25 @@
-//http://docs.sequelizejs.com/manual/installation/usage.html
-const Sequelize = require('sequelize') // mysql2 must be installed for sequilize to work
-const connection = require('./mysqlconnection')
+const mongodb = require('mongodb')
+const MongoClient = mongodb.MongoClient
+const db = require('./mysqlconnection')
+let _db
 
-// sequelize is an object relational mapping library (like Entity Framework)
-const sequelize = new Sequelize(connection.database, connection.user, connection.password, {
-  dialect: connection.dialect,
-  host: connection.host,
-})
+const mongoConnect = callback => {
+  MongoClient.connect(db.mongoDbConnectionString).then(client => {
+    _db = client.db()
+    callback()
+  }).catch(err => {
+    console.log(err)
+    throw err
+  })
+}
 
-module.exports = sequelize
+const getDb = () => {
+  if(_db) {
+    return _db
+  }
+  throw '_db was null in getDb()'
+}
+
+exports.mongoConnect = mongoConnect
+exports. getDb = getDb
+ 
