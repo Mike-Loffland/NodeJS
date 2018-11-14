@@ -6,6 +6,8 @@ const shopRoutes = require('./routes/shop')
 const rootDir = require('./utils/path')
 const fileNotFoundController = require('./controllers/file-not-found')
 const mongoConnect = require('./utils/database').mongoConnect
+const User = require('./models/user')
+
 const app = express()
 // tell express the name of the view engine
 // https://expressjs.com/en/4x/api.html#app.settings.table
@@ -16,6 +18,15 @@ app.set('views', path.join(rootDir, 'views'))
 
 // add middleware
 
+app.use((req, res, next) => {
+  User.findById('5beb609945cb4026d00075d2').then(user => {
+    req.user = new User(user, user.cart)
+    next()
+  }).catch(err => {
+    console.log(err)
+  })
+})
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(rootDir, 'public')))
 app.use(adminData.filterKey, adminData.routes)
@@ -23,5 +34,6 @@ app.use(shopRoutes)
 app.use(fileNotFoundController.show404)
 
 mongoConnect(() => {
+  
   app.listen(3000)
 })

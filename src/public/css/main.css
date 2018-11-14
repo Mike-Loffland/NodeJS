@@ -76,6 +76,7 @@ form {
 
 .cart img {
   max-height: 35px;
+  min-height: 35px;
   margin: 5px;
 }
 

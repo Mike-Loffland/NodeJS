@@ -21,7 +21,7 @@
               <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
               <div>
                 <%= product.title %>
-                 (<%= product.cartItem.quantity %>)
+                 (<%= product.quantity %>)
               </div>
 
              <a href="/delete-cart-item/<%= product._id %>" class="btn">Remove</a>

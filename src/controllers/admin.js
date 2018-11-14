@@ -48,7 +48,7 @@ exports.getDeleteProduct = (req, res, next) => {
 }
 
 exports.postAddProduct = (req, res, next) => {
-  const product = new Product(req.body)
+  const product = new Product(req.body, req.user.id)
 
     product.save()
     .then(result => {
