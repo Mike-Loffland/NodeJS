@@ -18,13 +18,13 @@
       <% if (cartProducts.length > 0) { %>
           <% for (let product of cartProducts) { %>
             <div class="cart">
-              <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
+              <img src="<%= product.productId.imageUrl %>" alt="<%= product.productId.title %>">
               <div>
-                <%= product.title %>
+                <%= product.productId.title %>
                  (<%= product.quantity %>)
               </div>
 
-             <a href="/delete-cart-item/<%= product._id %>" class="btn">Remove</a>
+             <a href="/delete-cart-item/<%= product.productId._id %>" class="btn">Remove</a>
             </div>
           <% } %>
         <form action="/create-order" method="POST" style="margin:auto;width:160px;padding-top:20px;display:block;">

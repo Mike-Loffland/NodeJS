@@ -13,8 +13,7 @@ exports.getEditProduct = (req, res, next) => {
   const editMode = req.query.edit && req.query.edit.toUpperCase() === 'TRUE'
   if (editMode) {
     const { id } = req.params
-    // getting the product to edit based on the user... not sure why he is doing this (wouldn't you want admins to be able to edit ALL products?? not just the ones they created?)
-    Product.getById(id)
+    Product.findById(id)
       .then(product => {
         if (!product) {
           // throw error
@@ -38,7 +37,7 @@ exports.getEditProduct = (req, res, next) => {
 
 exports.getDeleteProduct = (req, res, next) => {
   const { id } = req.params
-  Product.deleteById(id)
+  Product.findByIdAndRemove(id)
     .then(() => {
       res.redirect('/admin/products')
     })
@@ -48,20 +47,35 @@ exports.getDeleteProduct = (req, res, next) => {
 }
 
 exports.postAddProduct = (req, res, next) => {
-  const product = new Product(req.body, req.user.id)
+  const { title, price, description, imageUrl } = req.body
+  const { _id } = req.user
+  const product = new Product({ 
+    title, 
+    price, 
+    description, 
+    imageUrl,
+    userId: _id
+  })
 
-    product.save()
-    .then(result => {
-      res.redirect('/admin/products')
-    })
-    .catch(err => {
-      console.log(err)
-    })
+  product.save()
+  .then(() => {
+    res.redirect('/admin/products')
+  })
+  .catch(err => {
+    console.log(err)
+  })
 }
 
 exports.postEditProduct = (req, res, next) => {
-  const product = new Product(req.body)
-  product.save()
+  const { title, price, description, imageUrl, id } = req.body
+  Product.findById(id)
+    .then(product => {
+      product.title = title
+      product.price = price
+      product.description = description
+      product.imageUrl = imageUrl
+      return product.save()
+    })
     .then(() => {
       res.redirect('/admin/products')
     })
@@ -71,7 +85,10 @@ exports.postEditProduct = (req, res, next) => {
 }
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
+    // .select('title price -_id') // define the fields you want.. exclude the _id field (_id is always included unless you say to exclude it)
+    // .populate('userId', 'name') // just return the name field on the User
+    // .populate('userId') // return the entire user object
     .then(products => {
       res.render('./ejs/admin/product-list-admin', {
         products,
@@ -80,6 +97,6 @@ exports.getProducts = (req, res, next) => {
       })
     })
     .catch(err => {
-      console.loog(err)
+      console.log(err)
     })
 }

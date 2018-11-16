@@ -5,8 +5,9 @@ const adminData = require('./routes/admin')
 const shopRoutes = require('./routes/shop')
 const rootDir = require('./utils/path')
 const fileNotFoundController = require('./controllers/file-not-found')
-const mongoConnect = require('./utils/database').mongoConnect
 const User = require('./models/user')
+const dbConn = require('./utils/mysqlconnection.js')
+const mongoose = require('mongoose')
 
 const app = express()
 // tell express the name of the view engine
@@ -19,8 +20,8 @@ app.set('views', path.join(rootDir, 'views'))
 // add middleware
 
 app.use((req, res, next) => {
-  User.findById('5beb609945cb4026d00075d2').then(user => {
-    req.user = new User(user, user.cart)
+  User.findById('5bee208c6b39bd3cec64124d').then(user => {
+    req.user = user
     next()
   }).catch(err => {
     console.log(err)
@@ -33,7 +34,25 @@ app.use(adminData.filterKey, adminData.routes)
 app.use(shopRoutes)
 app.use(fileNotFoundController.show404)
 
-mongoConnect(() => {
-  
-  app.listen(3000)
+mongoose.connect(dbConn.mongoDbConnectionString)
+  .then(result => {
+
+    User.findById('5bee208c6b39bd3cec64124d').then(user => {
+      if(!user){
+        const user = new User({
+          name: 'Mike',
+          email: 'mike@mike.com',
+          cart: {
+            items: []
+          }
+        })
+        user.save()        
+      }
+    }).catch(err => {
+      console.log(err)
+    })
+
+    app.listen(3000)
+}).catch(err => {
+  console.log(err)
 })
