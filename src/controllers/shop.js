@@ -1,6 +1,7 @@
 // CONTROLLER - connects model and view, should only make sure that the two can communicate (in both directions)
 const Product = require('../models/product')
 const Order = require('../models/order')
+const User = require('../models/user')
 
 exports.getIndex = (req, res, next) => {
   Product.find()
@@ -9,7 +10,7 @@ exports.getIndex = (req, res, next) => {
         products,
         docTitle: 'Shop',
         path: '/',
-        isLoggedIn: req.isLoggedIn,
+        isLoggedIn: req.session.isLoggedIn,
       })
     })
     .catch(err => {
@@ -24,7 +25,7 @@ exports.getProducts = (req, res, next) => {
         products,
         docTitle: 'All Products',
         path: '/products',
-        isLoggedIn: req.isLoggedIn,        
+        isLoggedIn: req.session.isLoggedIn,        
       })
     })
     .catch(err => {
@@ -41,7 +42,7 @@ exports.getProductById = (req, res, next) => {
         product,
         docTitle: `Product Details: ${product.title}`,
         path: '/products',
-        isLoggedIn: req.isLoggedIn,
+        isLoggedIn: req.session.isLoggedIn,
       })
     })
     .catch(err => {
@@ -51,66 +52,90 @@ exports.getProductById = (req, res, next) => {
 }
 
 exports.getCart = (req, res, next) => {
-  req.user
-    .populate('cart.items.productId') // does not return a promise
-    .execPopulate() // returns a promise
+  // req.user
+
+  User.findById(req.session.user._id)
     .then(user => {
-      res.render('./ejs/shop/cart', {
-        docTitle: 'Your Cart',
-        path: '/cart',
-        cartProducts: user.cart.items,
-        isLoggedIn: req.isLoggedIn,
+      user.populate('cart.items.productId') // does not return a promise
+      .execPopulate() // returns a promise
+      .then(user => {
+        res.render('./ejs/shop/cart', {
+          docTitle: 'Your Cart',
+          path: '/cart',
+          cartProducts: user.cart.items,
+          isLoggedIn: req.session.isLoggedIn,
+        })
       })
     })
+    .catch(err => console.log(err));
 }
 
 exports.deleteCartItem = (req, res, next) => {
   let { id } = req.params
-  req.user.deleteCartItem(id).then(()=> {
-    res.redirect('/cart')    
-  })
-    .catch(err => {
-      console.log(err)
+  
+  User.findById(req.session.user._id)
+    .then(user => {
+      return user.deleteCartItem(id);
     })
+    .then(result => {
+      res.redirect("/cart");
+    })
+    .catch(err => console.log(err));
+
 }
 
 exports.postCart = (req, res, next) => {
   let { id } = req.body
-  Product.findById(id).then(product => {
-    return req.user.addToCart(product)
-  }).then(result => {
-    res.redirect('/cart')
-  }).catch(err => {
-    console.log(err)
-  })
+  User.findById(req.session.user._id)
+    .then(user => {
+      Product.findById(id).then(product => {
+        return user.addToCart(product)
+      })      
+    })
+    .then(result => {
+      res.redirect("/cart");
+    })
+    .catch(err => console.log(err));
+    
+    
+  // Product.findById(id).then(product => {
+  //   return   req.session.user.addToCart(product)
+  // }).then(result => {
+  //   res.redirect('/cart')
+  // }).catch(err => {
+  //   console.log(err)
+  // })
 }
 
 exports.postOrder = (req, res, next) => {
-  let { name } = req.user
-  req.user
-    .populate('cart.items.productId') // does not return a promise
-    .execPopulate() // returns a promise
-    .then(user => { 
-      const products = user.cart.items.map(i => {
-        return {
-          quantity: i.quantity,
-          productData: { ...i.productId._doc } // _doc is from Mongoose... get the object document
-        }
+  let { name } = req.session.user
+
+
+  User.findById(req.session.user._id)
+    .then(user => {
+      user.populate('cart.items.productId') // does not return a promise
+      .execPopulate() // returns a promise
+      .then(user => { 
+        const products = user.cart.items.map(i => {
+          return {
+            quantity: i.quantity,
+            productData: { ...i.productId._doc } // _doc is from Mongoose... get the object document
+          }
+        })
+        const order = new Order({
+          user: {
+            name,
+            userId: req.session.user
+          },
+          products 
+        })      
+        order.save().then(()=> {
+          return user.clearCart()
+        })
+      })  
+      .then(()=> {
+        res.redirect('/orders')      
       })
-      const order = new Order({
-        user: {
-          name,
-          userId: req.user
-        },
-        products 
-      })      
-      order.save()
-    })  
-    .then(() => {
-      return req.user.clearCart()
-    })
-    .then(()=> {
-      res.redirect('/orders')      
     })
     .catch(err => {
       console.log(err)
@@ -118,13 +143,13 @@ exports.postOrder = (req, res, next) => {
 }
 
 exports.getOrders = (req, res, next) => {
-  Order.find({ 'user.userId': req.user._id })
+  Order.find({ 'user.userId': req.session.user._id })
     .then(orders => {
       res.render('./ejs/shop/orders', {
         docTitle: 'Your Orders',
         path: '/orders',
         orders,
-        isLoggedIn: req.isLoggedIn,
+        isLoggedIn: req.session.isLoggedIn,
     })
   })
 }

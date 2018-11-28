@@ -6,7 +6,7 @@ exports.getAddProduct = (req, res, next) => {
     path: '/admin/add-product',
     filterKey: '/admin',
     editing: false,
-    isLoggedIn: req.isLoggedIn,
+    isLoggedIn: req.session.isLoggedIn,
   })
 }
 
@@ -27,7 +27,7 @@ exports.getEditProduct = (req, res, next) => {
             filterKey: '/admin',
             editing: editMode,
             product,
-            isLoggedIn: req.isLoggedIn,
+            isLoggedIn: req.session.isLoggedIn,
           })
         }
       })
@@ -50,7 +50,7 @@ exports.getDeleteProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const { title, price, description, imageUrl } = req.body
-  const { _id } = req.user
+  const { _id } = req.session.user //req.user
   const product = new Product({ 
     title, 
     price, 
@@ -96,7 +96,7 @@ exports.getProducts = (req, res, next) => {
         products,
         docTitle: 'Admin Products',
         path: '/admin/products',
-        isLoggedIn: req.isLoggedIn,
+        isLoggedIn: req.session.isLoggedIn,
       })
     })
     .catch(err => {

@@ -14,31 +14,10 @@ const MongoDbstore = require('connect-mongodb-session')(session) // pass in the 
 
 const app = express()
 
-
-
-
-
-
-
-
-// NO DOCUMENTS ARE BEING STORED IN THE SESSIONS COLLECTION 
-// *** The collection is being created, but... no documents are actually being stored after setting the cookie
-
-const sessionStore = MongoDbstore({
+const sessionStore = new MongoDbstore({
   uri: dbConn.MONGODB_URI,
   collection: 'sessions',
 })
-
-
-
-
-
-
-
-
-
-
-
 
 // tell express the name of the view engine
 // https://expressjs.com/en/4x/api.html#app.settings.table
@@ -49,14 +28,14 @@ app.set('views', path.join(rootDir, 'views'))
 
 // add middleware
 
-app.use((req, res, next) => {
-  User.findById('5bee208c6b39bd3cec64124d').then(user => {
-    req.user = user
-    next()
-  }).catch(err => {
-    console.log(err)
-  })
-})
+// app.use((req, res, next) => {
+//   User.findById('5bee208c6b39bd3cec64124d').then(user => {
+//     req.user = user
+//     next()
+//   }).catch(err => {
+//     console.log(err)
+//   })
+// })
 
 app.use(session({
   secret: 'somelongstringofsomesort',

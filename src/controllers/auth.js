@@ -1,3 +1,5 @@
+const User = require('../models/user')
+
 exports.getLogin = (req, res, next) => {
 
   // *** EXTRACT MANUAL COOKIE LOGIC
@@ -14,10 +16,8 @@ exports.getLogin = (req, res, next) => {
   //   }    
   // }
   // *** END EXTRACT MANUAL COOKIE LOGIC  
-
+ 
   let isLoggedIn = req.session.isLoggedIn
-
-  console.log(isLoggedIn)
 
   res.render('./ejs/auth/login', {
     docTitle: 'Shop | Login',
@@ -40,9 +40,22 @@ exports.postLogin = (req, res, next) => {
   // // res.setHeader('Set-Cookie', 'isLoggedIn=true; Max-Age=10; Secure')
   // **** END MANUAL COOKIE
 
-  // this stores the session in-memory --> use a session-store (database... using connect-mongodb-session since we're already using mongodb)
-  req.session.isLoggedIn = true // session cookie will expire when the browser is closed
+  // use a session-store (database... using connect-mongodb-session since we're already using mongodb)
+  User.findById('5bee208c6b39bd3cec64124d').then(user => {
+    req.session.user = user
+    req.session.isLoggedIn = true // session cookie will expire when the browser is closed
+    res.redirect('/')
+  }).catch(err => {
+    console.log(err)
+  })  
 
-  // faux login
-  res.redirect('/')
+}
+
+
+exports.postLogout = (req, res, next) => {
+  req.session.destroy(err => {
+    // console.log(err) // err will only have something if there is a problem
+    res.redirect('/')
+  }) // via connect-mongodb-session
+
 }
