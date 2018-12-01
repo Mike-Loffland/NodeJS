@@ -55,22 +55,20 @@ app.use(fileNotFoundController.show404)
 
 mongoose.connect(dbConn.MONGODB_URI)
   .then(result => {
-
-    User.findById('5bee208c6b39bd3cec64124d').then(user => {
-      if(!user){
-        const user = new User({
-          name: 'Mike',
-          email: 'mike@mike.com',
-          cart: {
-            items: []
-          }
-        })
-        user.save()        
-      }
-    }).catch(err => {
-      console.log(err)
-    })
-
+    // User.findById('5bee208c6b39bd3cec64124d').then(user => {
+    //   if(!user){
+    //     const user = new User({
+    //       name: 'Mike',
+    //       email: 'mike@mike.com',
+    //       cart: {
+    //         items: []
+    //       }
+    //     })
+    //     user.save()        
+    //   }
+    // }).catch(err => {
+    //   console.log(err)
+    // })
     app.listen(3000)
 }).catch(err => {
   console.log(err)

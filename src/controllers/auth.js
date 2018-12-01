@@ -1,4 +1,5 @@
 const User = require('../models/user')
+const bcrypt = require('bcryptjs')
 
 exports.getLogin = (req, res, next) => {
 
@@ -41,10 +42,29 @@ exports.postLogin = (req, res, next) => {
   // **** END MANUAL COOKIE
 
   // use a session-store (database... using connect-mongodb-session since we're already using mongodb)
-  User.findById('5bee208c6b39bd3cec64124d').then(user => {
-    req.session.user = user
-    req.session.isLoggedIn = true // session cookie will expire when the browser is closed
-    res.redirect('/')
+  const { email, password } = req.body
+
+  User.findOne({ email }).then(user => {
+    if(!user){
+      return res.redirect('/login')
+    }
+    
+    bcrypt.compare(password, user.password)
+      .then( success => {
+        if(success){
+          req.session.user = user
+          req.session.isLoggedIn = true // session cookie will expire when the browser is closed
+          req.session.save(err => {
+            console.log('user logged in', err)
+            res.redirect('/')
+          })
+        } else {
+          res.redirect('/login')
+        }
+      })
+      .catch(err => {
+        // this is only for true errors (not if the passwords do not match)
+      })
   }).catch(err => {
     console.log(err)
   })  
@@ -58,4 +78,41 @@ exports.postLogout = (req, res, next) => {
     res.redirect('/')
   }) // via connect-mongodb-session
 
+}
+
+exports.getSignup = (req, res, next) => {
+  res.render('./ejs/auth/signup', {
+    docTitle: 'Shop | Signup',
+    path: '/signup',
+    isLoggedIn: false,
+  })
+}
+exports.postSignup = (req, res, next) => {
+  const { email, password, confirmPassword } = req.body
+
+  User.findOne({ email }).then(user => {
+    if(user){
+      return res.redirect('/signup')
+    } 
+
+    return bcrypt
+      .hash(password, 12)
+      .then((hashedPassword) => {
+        const newUser = new User({
+          email,
+          password: hashedPassword,
+          cart: {
+            items: []
+          }
+        })
+        return newUser.save()
+      })
+      .then(() => {
+        res.redirect('/login')
+      })
+
+  })
+  .catch(err => {
+    console.log(err)
+  })
 }
