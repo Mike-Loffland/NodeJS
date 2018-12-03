@@ -11,7 +11,11 @@ const dbConn = require('./utils/mysqlconnection.js')
 const mongoose = require('mongoose')
 const session = require('express-session')
 const MongoDbstore = require('connect-mongodb-session')(session) // pass in the express-session variable
-
+const csurf = require('csurf') // https://github.com/expressjs/csurf
+// csurf
+// new token is created for every page that is rendered
+// protects against CSRF attacks
+const csrfPrevention = csurf()
 const app = express()
 
 const sessionStore = new MongoDbstore({
@@ -46,8 +50,24 @@ app.use(session({
   //   configure some stuff about the cookie
   // }
 }))
+
 app.use(bodyParser.urlencoded({ extended: false }))
+
+// AFTER we initialize the session
+app.use(csrfPrevention) // IMPORTANT: the use statement for csurf NEEDS to be after the bodyParser use statements.. otherwise the body hasn't been parsed before the check occurs
+
+// csurf will look for the existence of a csrf token for non get requests
+// hence, you need to make available in your views... pass it into the views via Express' res.locals...
+
+app.use((req, res, next) => {
+  // res.locals is available via Express
+  res.locals.isLoggedIn = req.session.isLoggedIn
+  res.locals.csrfToken = req.csrfToken()
+  next()
+})
+
 app.use(express.static(path.join(rootDir, 'public')))
+
 app.use(adminData.filterKey, adminData.routes)
 app.use(shopRoutes)
 app.use(authRoutes)

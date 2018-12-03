@@ -108,7 +108,7 @@ exports.postCart = (req, res, next) => {
 }
 
 exports.postOrder = (req, res, next) => {
-  let { name } = req.session.user
+  // let { name } = req.session.user
 
 
   User.findById(req.session.user._id)
@@ -122,9 +122,10 @@ exports.postOrder = (req, res, next) => {
             productData: { ...i.productId._doc } // _doc is from Mongoose... get the object document
           }
         })
+        console.log(user)
         const order = new Order({
           user: {
-            name,
+            email: user.email,
             userId: req.session.user
           },
           products 

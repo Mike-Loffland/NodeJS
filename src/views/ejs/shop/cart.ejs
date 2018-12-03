@@ -28,6 +28,7 @@
             </div>
           <% } %>
         <form action="/create-order" method="POST" style="margin:auto;width:160px;padding-top:20px;display:block;">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="btn">Place Order</button>
         </form>
       <% } else { %>
