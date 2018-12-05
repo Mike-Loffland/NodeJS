@@ -10,7 +10,6 @@ exports.getIndex = (req, res, next) => {
         products,
         docTitle: 'Shop',
         path: '/',
-        isLoggedIn: req.session.isLoggedIn,
       })
     })
     .catch(err => {
@@ -25,7 +24,6 @@ exports.getProducts = (req, res, next) => {
         products,
         docTitle: 'All Products',
         path: '/products',
-        isLoggedIn: req.session.isLoggedIn,        
       })
     })
     .catch(err => {
@@ -42,7 +40,6 @@ exports.getProductById = (req, res, next) => {
         product,
         docTitle: `Product Details: ${product.title}`,
         path: '/products',
-        isLoggedIn: req.session.isLoggedIn,
       })
     })
     .catch(err => {
@@ -63,7 +60,6 @@ exports.getCart = (req, res, next) => {
           docTitle: 'Your Cart',
           path: '/cart',
           cartProducts: user.cart.items,
-          isLoggedIn: req.session.isLoggedIn,
         })
       })
     })
@@ -150,7 +146,6 @@ exports.getOrders = (req, res, next) => {
         docTitle: 'Your Orders',
         path: '/orders',
         orders,
-        isLoggedIn: req.session.isLoggedIn,
     })
   })
 }

@@ -135,3 +135,19 @@ form {
   background-color: #00695c;
   color: white;
 }
+
+.user-message {
+  margin: auto;
+  width: 30rem;
+  border: 1px solid blue;
+  background-color: silver;
+  padding: 1rem;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.user-message--error {
+  border-color: black;
+  color: white;
+  background-color: red;
+}

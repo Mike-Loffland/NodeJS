@@ -6,7 +6,6 @@ exports.getAddProduct = (req, res, next) => {
     path: '/admin/add-product',
     filterKey: '/admin',
     editing: false,
-    // isLoggedIn: req.session.isLoggedIn,
   })
 }
 
@@ -27,7 +26,6 @@ exports.getEditProduct = (req, res, next) => {
             filterKey: '/admin',
             editing: editMode,
             product,
-            // isLoggedIn: req.session.isLoggedIn,
           })
         }
       })
@@ -96,7 +94,6 @@ exports.getProducts = (req, res, next) => {
         products,
         docTitle: 'Admin Products',
         path: '/admin/products',
-        // isLoggedIn: req.session.isLoggedIn,
       })
     })
     .catch(err => {

@@ -17,13 +17,10 @@ exports.getLogin = (req, res, next) => {
   //   }    
   // }
   // *** END EXTRACT MANUAL COOKIE LOGIC  
- 
-  let isLoggedIn = req.session.isLoggedIn
-
   res.render('./ejs/auth/login', {
     docTitle: 'Shop | Login',
     path: '/login',
-    isLoggedIn,
+    errorMessage: req.flash('error')
   })
 }
 
@@ -46,6 +43,7 @@ exports.postLogin = (req, res, next) => {
 
   User.findOne({ email }).then(user => {
     if(!user){
+      req.flash('error', 'Invalid email or password')
       return res.redirect('/login')
     }
     
