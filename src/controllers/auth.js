@@ -1,5 +1,14 @@
 const User = require('../models/user')
 const bcrypt = require('bcryptjs')
+const nodemailer = require('nodemailer')
+const nodemailerSendgridTransport = require('nodemailer-sendgrid-transport')
+const secretFile = require('../utils/mysqlconnection.js')
+console.log(secretFile.sendGridKey)
+const transporter = nodemailer.createTransport(nodemailerSendgridTransport({
+  auth: {
+    api_user: secretFile.sendGridKey
+  }
+}))
 
 exports.getLogin = (req, res, next) => {
 
@@ -106,6 +115,15 @@ exports.postSignup = (req, res, next) => {
         return newUser.save()
       })
       .then(() => {
+        console.log('attempting to send email')
+        return transporter.sendMail({
+          to: email,
+          from: 'shop@nodeshop.com',
+          subject: 'Slow golf clap',
+          html: '<h1>Super cool</h1>Thanks buddy!'
+        })
+      }).then(()=> {
+        console.log('attempting to redirect')
         res.redirect('/login')
       })
 
