@@ -9,7 +9,9 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-  },  
+  },
+  resetToken: String,
+  resetTokenExpiration: Date,
   cart: {
     items: [
       {

@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 const nodemailer = require('nodemailer')
 const nodemailerSendgridTransport = require('nodemailer-sendgrid-transport')
 const secretFile = require('../utils/mysqlconnection.js')
+const crypto = require('crypto') // internal node library -> https://nodejs.org/api/crypto.html
 console.log(secretFile.sendGridKey)
 const transporter = nodemailer.createTransport(nodemailerSendgridTransport({
   auth: {
@@ -117,7 +118,7 @@ exports.postSignup = (req, res, next) => {
       .then(() => {
         console.log('attempting to send email')
         return transporter.sendMail({
-          to: email,
+          to: 'mike@moderngenealogist.com',
           from: 'shop@nodeshop.com',
           subject: 'Slow golf clap',
           html: '<h1>Super cool</h1>Thanks buddy!'
@@ -130,5 +131,53 @@ exports.postSignup = (req, res, next) => {
   })
   .catch(err => {
     console.log(err)
+  })
+}
+
+exports.getReset = (req, res, next) => {
+  res.render('./ejs/auth/reset-password', {
+    docTitle: 'Shop | Reset Password',
+    path: '/reset',
+    errorMessage: req.flash('error')
+  })
+}
+
+exports.postReset = (req, res, next) => {
+  crypto.randomBytes(32, (err, buffer) => {
+    if(err) {
+      console.log(err)
+      return res.redirect('reset')
+    }
+
+    let { email } = req.body
+    const token = buffer.toString('hex') // convert hext to ascii
+
+    User.findOne({ email }).then(user => {
+      if(!user){
+        console.log('no user')
+        req.flash('error', 'No go... buddy.')
+        return res.redirect('/reset')
+      }
+      console.log('setting token')
+      user.resetToken = token
+      user.resetTokenExpiration = Date.now() + 3600000 // milliseconds
+      return user.save()
+    }).then( result => {
+      console.log('getting ready to send email')
+
+      res.redirect('/')
+
+      console.log(`http://localhost:3000/reset/${token}"`)
+      transporter.sendMail({
+        to: email,
+        from: 'shop@nodeshop.com',
+        subject: 'Password reset',
+        html: `<h1>Password Reset Information</h1>
+        <p>Click <a href="http://localhost:3000/reset/${token}">this link</a> to set a new password.</p>`
+      })   
+    })
+    .catch(err => {
+      console.log(err)
+    })
   })
 }

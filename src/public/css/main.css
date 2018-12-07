@@ -151,3 +151,8 @@ form {
   color: white;
   background-color: red;
 }
+
+.centered {
+  margin-top: 2em;
+  text-align: center;
+}
